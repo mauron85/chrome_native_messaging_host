@@ -1,10 +1,8 @@
 # Chrome Native Messaging Host for KeePassXC (aka keepassxc-proxy)
 
-Self-contained app intented to act as proxy between Google Chrome browser and KeePassXC app
+Self-contained app intented to act as proxy between Google Chrome browser and KeePassXC app.
 
-All dotnet runtime libraries included.
-*More info: https://github.com/dotnet/dotnet-docker-samples/tree/master/dotnetapp-selfcontained
-
+Rationale: https://github.com/varjolintu/keepassxc-browser/issues/1#issuecomment-310135201
 
 ## Create app binary
 Binaries can be created for multiple runtimes/platforms supported by dotnet core.
@@ -44,11 +42,17 @@ From running container:
 
 Build binary with selected runtime ubuntu.16.04-x64:
 
+    dotnet restore
+    dotnet build
     dotnet publish -c Release -o out -r ubuntu.16.04-x64
 
 Binary can now be accesible from docker host:
     
     ./out/chrome_native_messaging_host
+
+
+All dotnet runtime libraries included.
+*More info: https://github.com/dotnet/dotnet-docker-samples/tree/master/dotnetapp-selfcontained
 
 ## Register Google Chrome native messaging host
 

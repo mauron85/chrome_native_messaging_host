@@ -35,7 +35,7 @@ namespace chrome_native_messaging_host
                         byte[] receiveBuffer = new byte[4096];
                         socket.ReceiveFrom(receiveBuffer, ref endPoint);
                         var response = Encoding.ASCII.GetString(receiveBuffer);
-                        Console.Error.WriteLine("[DEBUG]' socket received {0}", response);
+                        Console.Error.WriteLine("[DEBUG] socket received {0}", response);
                         Write(response);
                   } catch (Exception e)
                   {
