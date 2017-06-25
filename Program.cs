@@ -19,34 +19,48 @@ namespace chrome_native_messaging_host
          Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
          IPAddress address = IPAddress.Parse("127.0.0.1");
          EndPoint endPoint = new IPEndPoint(address, 19700);
+         // FIX: https://github.com/varjolintu/keepassxc-proxy/issues/1#issuecomment-310907339
+         // Set the send and receive timeouts for synchronous methods
+         // to 5 second (5000 milliseconds.)
+         // If the time-out period is exceeded, SocketException will be thrown
+         socket.SendTimeout = 5000;
+         socket.ReceiveTimeout = 5000;
 
          Console.Error.WriteLine("[INFO] Messaging host listening...");
 
-         JObject json;
-         while ((json = Read()) != null)
+         String data;
+         while (!String.IsNullOrEmpty(data = Read()))
          {
-            Console.Error.WriteLine("[DEBUG] msg received: {0}", json.ToString());
-            if (json["action"] != null);
+            Console.Error.WriteLine("[DEBUG] req received: {0}", data);
+            JObject json;
+            try
             {
-                  try 
+                  json = (JObject)JsonConvert.DeserializeObject<JObject>(data);
+                  if (json["action"] != null);
                   {
-                        byte[] sendBuffer = Encoding.ASCII.GetBytes(json.ToString());
-                        socket.SendTo(sendBuffer, endPoint);
-                        byte[] receiveBuffer = new byte[4096];
-                        socket.ReceiveFrom(receiveBuffer, ref endPoint);
-                        var response = Encoding.ASCII.GetString(receiveBuffer);
-                        Console.Error.WriteLine("[DEBUG] socket received {0}", response);
-                        Write(response);
-                  } catch (Exception e)
-                  {
-                        Console.Error.WriteLine("[ERROR] socket send: {0}", e.ToString());
-                  }
+                        try
+                        {
+                              byte[] sendBuffer = Encoding.ASCII.GetBytes(json.ToString());
+                              socket.SendTo(sendBuffer, endPoint);
+                              byte[] receiveBuffer = new byte[4096];
+                              socket.ReceiveFrom(receiveBuffer, ref endPoint);
+                              var response = Encoding.ASCII.GetString(receiveBuffer);
+                              Console.Error.WriteLine("[DEBUG] resp received: {0}", response);
+                              Write(response);
+                        } catch (Exception e)
+                        {
+                              Console.Error.WriteLine("[ERROR] socket exception: {0}", e.ToString());
+                        }
 
+                  }
+            } catch (Exception e)
+            {
+                  Console.Error.WriteLine("[ERROR] parsing exception: {0}", e.ToString());
             }
          }
       }
 
-      public static JObject Read()
+      public static String Read()
       {
          var stdin = Console.OpenStandardInput();
          var length = 0;
@@ -64,7 +78,7 @@ namespace chrome_native_messaging_host
             }
          }
 
-         return (JObject)JsonConvert.DeserializeObject<JObject>(new string(buffer));
+         return new string(buffer);
       }
 
       public static void Write(String jsonString)
